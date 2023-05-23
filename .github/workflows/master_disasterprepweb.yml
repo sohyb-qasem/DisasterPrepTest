@@ -1,3 +1,6 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
 name: Build and deploy ASP app to Azure Web App - DisasterPrepWeb
 
 on:
@@ -13,25 +16,23 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '6.0.x'  # Replace with your .NET Core version
+      - name: Setup MSBuild path
+        uses: microsoft/setup-msbuild@v1.0.2
 
-      - name: Restore dependencies
-        run: dotnet restore
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
 
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
+      - name: Restore NuGet packages
+        run: nuget restore
 
       - name: Publish to folder
-        run: dotnet publish --configuration Release --no-build --output ./published
+        run: msbuild /nologo /verbosity:m /t:Build /t:pipelinePreDeployCopyAllFilesToOneFolder /p:_PackageTempDir="\published\"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v2
         with:
           name: ASP-app
-          path: ./published
+          path: '/published/**'
 
   deploy:
     runs-on: windows-latest
@@ -52,5 +53,5 @@ jobs:
         with:
           app-name: 'DisasterPrepWeb'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_DB43A87661F1462FB173728A53A0CD4B }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_D205139BD47F469691654D6B4ADAEB02 }}
           package: .
